@@ -196,7 +196,7 @@ public class AudioRecognizerActivity extends AppCompatActivity {
     private void servicio() throws IOException {
         // NOTE: you must manually set API_KEY below using information retrieved from your IBM Cloud account.
 
-        String API_KEY = "q-yV1oNI1_s9-hqI-dZeXro_nN5nf4yGBg5m9nIfCeAE";
+        String API_KEY = "API_KEY_HERE";
 
         HttpURLConnection tokenConnection = null;
         HttpURLConnection scoringConnection = null;
