@@ -17,12 +17,15 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.cuidartech.Interface.vdgBackendAPI;
 import com.example.cuidartech.MainActivity;
+import com.example.cuidartech.Model.Ubicacion;
 import com.example.cuidartech.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -32,9 +35,17 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
-public class LocationUpdateService extends Service {
+ public class LocationUpdateService extends Service {
 
     private static final String PACKAGE_NAME =
             "com.google.android.gms.location.sample.locationupdatesforegroundservice";
@@ -57,7 +68,7 @@ public class LocationUpdateService extends Service {
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 30000;
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
@@ -101,6 +112,10 @@ public class LocationUpdateService extends Service {
      * The current location.
      */
     private Location mLocation;
+
+    //Data
+    String usuario;
+    private Context context;
 
     public LocationUpdateService() {
     }
@@ -294,6 +309,9 @@ public class LocationUpdateService extends Service {
     private void onNewLocation(Location location) {
         Log.i(TAG, "New location: " + location);
 
+        //guardo la ubicacion
+        postUbicacion(location.getLatitude(), location.getLongitude());
+
         mLocation = location;
 
         // Notify anyone listening for broadcasts about the new location.
@@ -345,4 +363,64 @@ public class LocationUpdateService extends Service {
         }
         return false;
     }
+
+    public void postUbicacion(Double latitud, Double longitud){
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://vdg-back.herokuapp.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        vdgBackendAPI vdgBackendAPI = retrofit.create(com.example.cuidartech.Interface.vdgBackendAPI.class);
+
+        Map<String, Double> posicion = new HashMap<String, Double>();
+        posicion.put("latitud", latitud);
+        posicion.put("longitud", longitud);
+
+        Call<Ubicacion> call = vdgBackendAPI.agregarUbicacion(""+this.usuario, posicion);
+
+        call.enqueue(new Callback<Ubicacion>() {
+            @Override
+            public void onResponse(Call<Ubicacion> call, Response<Ubicacion> response) {
+
+                if(!response.isSuccessful()){
+                    Log.i("Error", "Código: " + response.errorBody());
+                    return;
+                }
+
+                Ubicacion ubicacion = (Ubicacion) response.body();
+                Log.i("Ubicacion", " Ubicacion guardarda para " + ubicacion.getIdPersona());
+                showToast(context, " Ubicacion guardarda para " + usuario);
+            }
+
+            @Override
+            public void onFailure(Call<Ubicacion> call, Throwable t) {
+                 Log.i("Error", "Error en la llamada");
+            }
+        });
+
+    }
+
+    public Location getmLocation() {
+    return mLocation;
 }
+
+    public void setUsuario(String usuario, Context context) {
+        this.usuario = usuario;
+        this.context = context;
+    }
+
+     public void showToast(Context context, String message){
+         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+     }
+
+     /**
+      * Seteo de intervalos de request para la localizacion
+      */
+     private void setIntervalLocationRequest(long INTERVAL_IN_MILLISECONDS, long FASTEST_INTERVAL_IN_MILLISECONDS) {
+         mLocationRequest.setInterval(INTERVAL_IN_MILLISECONDS);
+         mLocationRequest.setFastestInterval(FASTEST_INTERVAL_IN_MILLISECONDS);
+         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+     }
+
+ }

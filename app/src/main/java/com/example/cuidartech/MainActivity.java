@@ -8,8 +8,13 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -52,6 +57,12 @@ public class MainActivity extends AppCompatActivity implements
     // UI elements.
     private Button mRequestLocationUpdatesButton;
     private Button mRemoveLocationUpdatesButton;
+    private Button buttonLogout;
+
+    //Data
+    String usuario;
+    private SharedPreferences myPreferences;
+    private SharedPreferences.Editor editorPreferences;
 
     // Monitors the state of the connection to the service.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -76,12 +87,19 @@ public class MainActivity extends AppCompatActivity implements
         myReceiver = new MyReceiver();
         setContentView(R.layout.activity_main);
 
+        //Obtengo el email del usuario
+        Bundle extras = getIntent().getExtras();
+        usuario = extras.getString("usuario");
+        Log.i("Usuario", usuario);
+        inicializador();
+
         // Check that the user hasn't revoked permissions by going to Settings.
         if (Utils.requestingLocationUpdates(this)) {
             if (!checkPermissions()) {
                 requestPermissions();
             }
         }
+
     }
 
     @Override
@@ -99,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (!checkPermissions()) {
                     requestPermissions();
                 } else {
+                    mService.setUsuario(usuario, MainActivity.this);
                     mService.requestLocationUpdates();
                 }
             }
@@ -118,6 +137,20 @@ public class MainActivity extends AppCompatActivity implements
         // that since this activity is in the foreground, the service can exit foreground mode.
         bindService(new Intent(this, LocationUpdateService.class), mServiceConnection,
                 Context.BIND_AUTO_CREATE);
+
+        //guardar ubicacion
+        buttonLogout = (Button) findViewById(R.id.buttonLogout);
+        buttonLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editorPreferences.putString("emailUsuarioCuidarTech", "");
+                editorPreferences.putBoolean("sessionUsuarioCuidarTech", false);
+                editorPreferences.apply();
+                Toast.makeText(MainActivity.this, "La sesión se cerró correctamente", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+
     }
 
     @Override
@@ -262,4 +295,10 @@ public class MainActivity extends AppCompatActivity implements
             mRemoveLocationUpdatesButton.setEnabled(false);
         }
     }
+
+    public void inicializador(){
+        myPreferences = this.getSharedPreferences("CuidarTech", Context.MODE_PRIVATE);
+        editorPreferences = myPreferences.edit();
+    }
+
 }

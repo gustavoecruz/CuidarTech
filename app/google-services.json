@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "933538250347",
+    "project_id": "cuidartech-7e54f",
+    "storage_bucket": "cuidartech-7e54f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933538250347:android:d0a1bbca8111cba4a2bb2e",
+        "android_client_info": {
+          "package_name": "com.example.cuidartech"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933538250347-essruqn3k27mkir7c0q9hnpgnudu5npa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2ZIHuRuftKKp2-D7zlQM_uExyH1PVfys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933538250347-essruqn3k27mkir7c0q9hnpgnudu5npa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
